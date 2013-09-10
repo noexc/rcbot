@@ -50,7 +50,7 @@ handleLine h (Just m) = reply $ msg_command m
     reply _ = return ()
 
     response =
-      case (msg_params m !! 1) of
+      case params !! 1 of
         "!hello" -> Just "hey there"
         _ -> Nothing
 
