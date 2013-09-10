@@ -64,6 +64,7 @@ udpServer h = withSocketsDo $ do
       write h "PRIVMSG" $ channel ++ " :" ++ mesg
       putStrLn mesg
 
+main :: IO ()
 main = do
   h <- bot nickname
   forkIO $ do
