@@ -1,5 +1,6 @@
 module Main where
 
+import Control.Applicative
 import Control.Concurrent
 import Control.Monad
 import Network
@@ -28,6 +29,9 @@ write h s t = do
   hPrintf h "%s %s\r\n" s t
   printf    "> %s %s\n" s t
 
+botPrivmsg :: Handle -> String -> IO ()
+botPrivmsg h msg = write h "PRIVMSG" $ channel ++ " :" ++ msg
+
 botListen :: Handle -> IO ()
 botListen h = forever $ do
     s <- hGetLine h
@@ -42,17 +46,14 @@ handleLine h (Just m) = reply $ msg_command m
   where
     params = msg_params m
 
-    reply "PRIVMSG" =
-      case response of
-        Just x -> write h "PRIVMSG" $ channel ++ " :" ++ x
-        Nothing -> return ()
+    reply "PRIVMSG" = return ((botPrivmsg h) <$> response) >> return ()
+      where
+        response =
+          case params !! 1 of
+            "!hello" -> Just "hey there"
+            _ -> Nothing
     reply "PING" = write h "PONG " $ ":" ++ params !! 0
     reply _ = return ()
-
-    response =
-      case params !! 1 of
-        "!hello" -> Just "hey there"
-        _ -> Nothing
 
 udpServer :: Handle -> IO ()
 udpServer h = withSocketsDo $ do
