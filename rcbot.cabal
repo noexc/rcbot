@@ -1,0 +1,18 @@
+name:                rcbot
+version:             1.0.0
+synopsis:            mw Recent Changes IRC bot
+homepage:            https://github.com/W8UPD/rcbot
+license:             BSD3
+license-file:        LICENSE
+author:              Ricky Elrod
+maintainer:          ricky@elrod.me
+copyright:           2013 Ricky Elrod
+category:            Network
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+executable rcbot
+  main-is:             rcbot.hs
+  build-depends:       base >=4.6 && <4.7, network >=2.4 && <2.5, irc ==0.5.*
+  default-language:    Haskell2010

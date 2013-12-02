@@ -11,7 +11,7 @@ import Text.Printf
 
 server = "irc.freenode.net"
 port = 6667
-nickname = "w8upd-rc"
+nickname = "w8upd-rctest1"
 channel = "#qsolog"
 
 bot :: String -> IO Handle
@@ -46,7 +46,9 @@ handleLine h (Just m) = reply $ msg_command m
   where
     params = msg_params m
 
-    reply "PRIVMSG" = return ((botPrivmsg h) <$> response) >> return ()
+    reply "PRIVMSG" = case response of
+      Just s -> botPrivmsg h s >> return ()
+      _ -> return ()
       where
         response =
           case params !! 1 of
