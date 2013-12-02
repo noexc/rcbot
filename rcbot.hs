@@ -11,7 +11,7 @@ import Text.Printf
 
 server = "irc.freenode.net"
 port = 6667
-nickname = "w8upd-rctest1"
+nickname = "w8upd-rc"
 channel = "#qsolog"
 
 bot :: String -> IO Handle
