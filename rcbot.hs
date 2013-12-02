@@ -12,7 +12,7 @@ import Text.Printf
 server = "irc.freenode.net"
 port = 6667
 nickname = "w8upd-rc"
-channel = "#qsolog"
+channels = ["#qsolog", "#w8upd"]
 
 bot :: String -> IO Handle
 bot nickname = withSocketsDo $ do
@@ -20,8 +20,7 @@ bot nickname = withSocketsDo $ do
   hSetBuffering h NoBuffering
   write h "NICK" nickname
   write h "USER" (nickname ++ " 0 * :Recent Changes Bot")
-  --mapM (write h "JOIN") channels
-  write h "JOIN" channel
+  mapM_ (write h "JOIN") channels
   return h
 
 write :: Handle -> String -> String -> IO ()
@@ -30,7 +29,7 @@ write h s t = do
   printf    "> %s %s\n" s t
 
 botPrivmsg :: Handle -> String -> IO ()
-botPrivmsg h msg = write h "PRIVMSG" $ channel ++ " :" ++ msg
+botPrivmsg h msg = mapM_ (\c -> write h "PRIVMSG" $ c ++ " :" ++ msg) channels
 
 botListen :: Handle -> IO ()
 botListen h = forever $ do
@@ -64,7 +63,7 @@ udpServer h = withSocketsDo $ do
     forever $ do
       (mesg, recv_count, client) <- S.recvFrom sock 1024
       send_count <- S.sendTo sock mesg client
-      write h "PRIVMSG" $ channel ++ " :" ++ mesg
+      botPrivmsg h mesg
       putStrLn mesg
 
 main :: IO ()
