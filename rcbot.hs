@@ -32,7 +32,7 @@ botPrivmsg :: Handle -> String -> IO ()
 botPrivmsg h msg = mapM_ (\c -> write h "PRIVMSG" $ c ++ " :" ++ msg) channels
 
 botPrivmsgChannel :: Handle -> String -> String -> IO ()
-botPrivmsgChannel h ch msg = mapM_ (\c -> write h "PRIVMSG" $ c ++ " " ++ ch ++ ":" ++ msg) channels
+botPrivmsgChannel h ch msg = write h "PRIVMSG" $ ch ++ " :" ++ msg
 
 botListen :: Handle -> IO ()
 botListen h = forever $ do
