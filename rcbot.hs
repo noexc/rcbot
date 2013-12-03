@@ -31,6 +31,9 @@ write h s t = do
 botPrivmsg :: Handle -> String -> IO ()
 botPrivmsg h msg = mapM_ (\c -> write h "PRIVMSG" $ c ++ " :" ++ msg) channels
 
+botPrivmsgChannel :: Handle -> String -> String -> IO ()
+botPrivmsgChannel h ch msg = mapM_ (\c -> write h "PRIVMSG" $ c ++ " " ++ ch ++ ":" ++ msg) channels
+
 botListen :: Handle -> IO ()
 botListen h = forever $ do
     s <- hGetLine h
@@ -46,7 +49,7 @@ handleLine h (Just m) = reply $ msg_command m
     params = msg_params m
 
     reply "PRIVMSG" = case response of
-      Just s -> botPrivmsg h s >> return ()
+      Just s -> botPrivmsgChannel h (head params) s >> return ()
       _ -> return ()
       where
         response =
