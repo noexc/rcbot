@@ -1,25 +1,34 @@
+{-# LANGUAGE OverloadedStrings #-}
 module Main where
 
 import Control.Applicative
 import Control.Concurrent
 import Control.Monad
+import qualified Data.ByteString.Char8 as C8
 import Network
 import qualified Network.Socket as S
 import Network.IRC
 import System.IO
 import Text.Printf
 
+server :: String
 server = "irc.freenode.net"
+
+port :: Int
 port = 6667
+
+nickname :: String
 nickname = "w8upd-rc"
+
+channels :: [String]
 channels = ["#qsolog", "#w8upd"]
 
 bot :: String -> IO Handle
-bot nickname = withSocketsDo $ do
+bot nickname' = withSocketsDo $ do
   h <- connectTo server (PortNumber (fromIntegral port))
   hSetBuffering h NoBuffering
-  write h "NICK" nickname
-  write h "USER" (nickname ++ " 0 * :Recent Changes Bot")
+  write h "NICK" nickname'
+  write h "USER" (nickname' ++ " 0 * :Recent Changes Bot")
   mapM_ (write h "JOIN") channels
   return h
 
@@ -36,21 +45,20 @@ botPrivmsgChannel h ch msg = write h "PRIVMSG" $ ch ++ " :" ++ msg
 
 botListen :: Handle -> IO ()
 botListen h = forever $ do
-    s <- hGetLine h
+    s <- C8.hGetLine h
     handleLine h $ decode s
-    putStrLn s
-  where
-    forever a = a >> forever a
+    C8.putStrLn s
 
 handleLine :: Handle -> Maybe Message -> IO ()
-handleLine h Nothing = return ()
+handleLine _ Nothing = return ()
 handleLine h (Just m) = reply $ msg_command m
   where
-    params = msg_params m
+    params = C8.unpack <$> msg_params m
 
-    reply "PRIVMSG" = case response of
-      Just s -> botPrivmsgChannel h (head params) s >> return ()
-      _ -> return ()
+    reply "PRIVMSG" =
+      case response of
+        Just s -> botPrivmsgChannel h (head params) s >> return ()
+        _ -> return ()
       where
         response =
           case params !! 1 of
@@ -64,14 +72,13 @@ udpServer h = withSocketsDo $ do
     sock <- S.socket S.AF_INET S.Datagram 0
     S.bindSocket sock (S.SockAddrInet 2000 S.iNADDR_ANY)
     forever $ do
-      (mesg, recv_count, client) <- S.recvFrom sock 1024
-      send_count <- S.sendTo sock mesg client
+      (mesg, _, client) <- S.recvFrom sock 1024
+      _ <- S.sendTo sock mesg client
       botPrivmsg h mesg
       putStrLn mesg
 
 main :: IO ()
 main = do
   h <- bot nickname
-  forkIO $ do
-    botListen h
+  _ <- forkIO $ botListen h
   udpServer h
