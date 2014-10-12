@@ -18,10 +18,10 @@ port :: Int
 port = 6667
 
 nickname :: String
-nickname = "w8upd-rc"
+nickname = "noexc-rc"
 
 channels :: [String]
-channels = ["#qsolog", "#w8upd"]
+channels = ["#qsolog", "#noexc"]
 
 bot :: String -> IO Handle
 bot nickname' = withSocketsDo $ do
